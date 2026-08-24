@@ -76,18 +76,39 @@ CONTACT:
 
   let history = [];
   let isSending = false;
+  let lockedScrollY = 0;
+
+  function lockBodyScroll() {
+    lockedScrollY = window.scrollY;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${lockedScrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+  }
+
+  function unlockBodyScroll() {
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.left = "";
+    document.body.style.right = "";
+    window.scrollTo(0, lockedScrollY);
+  }
 
   function openPanel() {
     panel.classList.add("open");
     toggle.classList.add("open");
     toggle.setAttribute("aria-label", "Close chat");
-    input.focus();
+    lockBodyScroll();
+    // avoid instantly popping the mobile keyboard (and the viewport jump that
+    // comes with it) — only auto-focus on desktop-sized screens
+    if (window.innerWidth > 768) input.focus();
   }
 
   function closePanel() {
     panel.classList.remove("open");
     toggle.classList.remove("open");
     toggle.setAttribute("aria-label", "Open chat");
+    unlockBodyScroll();
   }
 
   toggle.addEventListener("click", () => {
