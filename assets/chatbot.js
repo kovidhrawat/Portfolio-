@@ -9,9 +9,9 @@
 //      works when called from your own site.
 //   3. Paste the key below.
 (function () {
-  const GEMINI_API_KEY = "AQ.Ab8RN6JtFE6pyLmpTn9AqLc6WJPPulePFH4TVSfLcvoMkf9Lmw"; // <-- paste your key here
+  const GEMINI_API_KEY = "AQ.Ab8RN6KEM9OgO2LzwKVfr5PkiGFT9QnLr5xXR1qEIwIasNhktw"; // <-- paste your key here
   const GEMINI_MODEL = "gemini-3.6-flash";
-  const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+  const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
   const SYSTEM_PROMPT = `You are the AI assistant embedded in Kovidh Rawat's personal portfolio website. You ONLY answer questions about Kovidh Rawat — his background, education, work experience, skills, projects, certifications, hobbies, and how to reach him. Use ONLY the facts listed below; never invent anything not stated here. If someone asks anything unrelated to Kovidh (general knowledge, coding help, other people, opinions, etc.), politely decline and say you're only able to answer questions about Kovidh Rawat. Keep answers concise (2-4 sentences) and friendly, written in third person about Kovidh.
 
@@ -155,7 +155,10 @@ CONTACT:
     try {
       const res = await fetch(GEMINI_ENDPOINT, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": GEMINI_API_KEY,
+        },
         body: JSON.stringify({
           contents: history,
           systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
