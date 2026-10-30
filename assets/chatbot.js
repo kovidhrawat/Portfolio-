@@ -1,17 +1,11 @@
 // ── Kovidh's portfolio chatbot ──────────────────────────────────────────
-// Calls the Gemini API directly from the browser (GitHub Pages has no
-// backend to run). This means the API key below is visible to anyone who
-// views source. To limit risk:
-//   1. Get a free key at https://aistudio.google.com/apikey
-//   2. In Google Cloud Console → APIs & Services → Credentials, edit the
-//      key and set an "HTTP referrer" restriction to your GitHub Pages
-//      domain (e.g. https://kovidhrawat.github.io/*), so the key only
-//      works when called from your own site.
-//   3. Paste the key below.
+// Calls a Cloudflare Worker (see /cloudflare-worker.js) instead of Gemini
+// directly. The Worker holds the Gemini API key server-side as an
+// encrypted secret, so no key ever ships in this file or the GitHub repo —
+// nothing here for GitHub's secret scanner (or anyone viewing source) to
+// find and get auto-revoked.
 (function () {
-  const GEMINI_API_KEY = "AQ.Ab8RN6KEM9OgO2LzwKVfr5PkiGFT9QnLr5xXR1qEIwIasNhktw"; // <-- paste your key here
-  const GEMINI_MODEL = "gemini-3.6-flash";
-  const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+  const WORKER_ENDPOINT = "https://portfolio-chatbot.kovidhrawat2004.workers.dev"; // <-- paste your deployed Worker URL here
 
   const SYSTEM_PROMPT = `You are the AI assistant embedded in Kovidh Rawat's personal portfolio website. You ONLY answer questions about Kovidh Rawat — his background, education, work experience, skills, projects, certifications, hobbies, and how to reach him. Use ONLY the facts listed below; never invent anything not stated here. If someone asks anything unrelated to Kovidh (general knowledge, coding help, other people, opinions, etc.), politely decline and say you're only able to answer questions about Kovidh Rawat. Keep answers concise (2-4 sentences) and friendly, written in third person about Kovidh.
 
@@ -139,9 +133,9 @@ CONTACT:
   }
 
   async function sendMessage(userText) {
-    if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
+    if (!WORKER_ENDPOINT || WORKER_ENDPOINT.includes("YOUR-WORKER-NAME")) {
       addMessage(
-        "The chat assistant isn't set up yet — Kovidh needs to add a Gemini API key in assets/chatbot.js.",
+        "The chat assistant isn't set up yet — Kovidh needs to deploy the Cloudflare Worker and add its URL in assets/chatbot.js.",
         "bot"
       );
       return;
@@ -153,11 +147,10 @@ CONTACT:
     addTyping();
 
     try {
-      const res = await fetch(GEMINI_ENDPOINT, {
+      const res = await fetch(WORKER_ENDPOINT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-goog-api-key": GEMINI_API_KEY,
         },
         body: JSON.stringify({
           contents: history,
